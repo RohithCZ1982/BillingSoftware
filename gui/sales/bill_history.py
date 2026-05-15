@@ -84,7 +84,10 @@ class BillHistoryFrame(ctk.CTkFrame):
         ctk.CTkLabel(right, text="Bill Details",
                      font=ctk.CTkFont(weight="bold")).pack(pady=(10, 4))
 
-        self.detail_box = ctk.CTkTextbox(right, state="disabled")
+        self.detail_box = ctk.CTkTextbox(
+            right, state="disabled",
+            font=("Courier New", 12),   # monospace — required for column alignment
+        )
         self.detail_box.pack(fill="both", expand=True, padx=8, pady=(0, 8))
 
         action_row = ctk.CTkFrame(right, fg_color="transparent")
@@ -181,19 +184,21 @@ class BillHistoryFrame(ctk.CTkFrame):
         lines.append(f"Section     : {bill.student_section or ''}")
         lines.append(f"Parent      : {bill.parent_name or ''}")
         lines.append(f"Phone       : {bill.parent_phone or ''}")
-        lines.append("-" * 50)
-        lines.append(f"{'Item':<22} {'Qty':>4} {'Price':>8} {'Total':>9}")
-        lines.append("-" * 50)
+        SEP = "-" * 48
+        lines.append(SEP)
+        lines.append(f"{'Item':<24} {'Qty':>4}  {'Price':>8}  {'Total':>8}")
+        lines.append(SEP)
         for item in bill.items:
             lines.append(
-                f"{item.item_name:<22} {item.quantity:>4} {item.unit_price:>8.2f} {item.total_price:>9.2f}"
+                f"{item.item_name:<24} {item.quantity:>4}  {item.unit_price:>8.2f}  {item.total_price:>8.2f}"
             )
-        lines.append("-" * 50)
-        lines.append(f"{'Subtotal':>36} : ₹{bill.subtotal:.2f}")
+        lines.append(SEP)
+        lines.append(f"{'Subtotal':<24} {'':>4}  {'':>8}  {bill.subtotal:>8.2f}")
         if bill.discount_value:
             dtype = f"({bill.discount_value}%)" if bill.discount_type == "percent" else ""
-            lines.append(f"{'Discount ' + dtype:>36} : ₹{bill.subtotal - bill.grand_total:.2f}")
-        lines.append(f"{'GRAND TOTAL':>36} : ₹{bill.grand_total:.2f}")
+            disc_amt = bill.subtotal - bill.grand_total
+            lines.append(f"{'Discount ' + dtype:<24} {'':>4}  {'':>8}  {disc_amt:>8.2f}")
+        lines.append(f"{'GRAND TOTAL':<24} {'':>4}  {'':>8}  {bill.grand_total:>8.2f}")
         if bill.notes:
             lines.append(f"\nNotes: {bill.notes}")
         self._pdf_path = bill.pdf_path
