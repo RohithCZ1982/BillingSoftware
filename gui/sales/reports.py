@@ -157,9 +157,6 @@ class ReportsFrame(ctk.CTkFrame):
         for i, (key, label) in enumerate([
             ("count",   "Total Bills"),
             ("revenue", "Total Revenue"),
-            ("avg",     "Avg Bill Value"),
-            ("max",     "Highest Bill"),
-            ("min",     "Lowest Bill"),
         ]):
             col = ctk.CTkFrame(summary_inner, fg_color="transparent")
             col.pack(side="left", expand=True)
@@ -311,19 +308,11 @@ class ReportsFrame(ctk.CTkFrame):
         totals = [r["_grand_total_raw"] for r in rows]
         count  = len(totals)
         if count == 0:
-            for lbl in self._summary_labels.values():
-                lbl.configure(text="—")
             self._summary_labels["count"].configure(text="0")
+            self._summary_labels["revenue"].configure(text="—")
             return
-        revenue = sum(totals)
-        avg     = revenue / count
-        hi      = max(totals)
-        lo      = min(totals)
         self._summary_labels["count"].configure(text=str(count))
-        self._summary_labels["revenue"].configure(text=f"₹ {revenue:,.2f}")
-        self._summary_labels["avg"].configure(text=f"₹ {avg:,.2f}")
-        self._summary_labels["max"].configure(text=f"₹ {hi:,.2f}")
-        self._summary_labels["min"].configure(text=f"₹ {lo:,.2f}")
+        self._summary_labels["revenue"].configure(text=f"Rs. {sum(totals):,.2f}")
 
     # ─────────────────────────────────────────────────────────────────────────
     #  SORT
