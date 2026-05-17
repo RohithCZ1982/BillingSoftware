@@ -94,6 +94,8 @@ class Bill(Base):
     discount_value = Column(Float, default=0.0)
     grand_total = Column(Float, default=0.0)
     notes = Column(Text)
+    payment_mode = Column(String(10), default="Cash")   # Cash / UPI
+    upi_transaction_id = Column(String(100))
     pdf_path = Column(String(300))
     created_by = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime, default=datetime.now)

@@ -149,10 +149,17 @@ def generate_bill_pdf(bill_data: dict) -> str:
         discount_label  = "Discount"
         discount_amount = discount_value
 
+    payment_mode = bill_data.get("payment_mode", "Cash")
+    upi_txn = bill_data.get("upi_transaction_id", "")
+    payment_label = payment_mode
+    if payment_mode == "UPI" and upi_txn:
+        payment_label = f"UPI (Txn: {upi_txn})"
+
     totals_data = [
         ["", "", "Subtotal:", f"₹ {subtotal:.2f}"],
         ["", "", discount_label + ":", f"- ₹ {discount_amount:.2f}"],
         ["", "", "GRAND TOTAL:", f"₹ {grand_total:.2f}"],
+        ["", "", "Payment:", payment_label],
     ]
     totals_table = Table(totals_data, colWidths=[50*mm, 60*mm, 45*mm, 30*mm])
     totals_table.setStyle(TableStyle([
@@ -166,6 +173,8 @@ def generate_bill_pdf(bill_data: dict) -> str:
         ("TOPPADDING", (0, 0), (-1, -1), 4),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
         ("LINEABOVE", (2, 2), (3, 2), 1, colors.HexColor("#1a73e8")),
+        ("FONTSIZE", (2, 3), (3, 3), 9),
+        ("TEXTCOLOR", (3, 3), (3, 3), colors.HexColor("#34a853")),
     ]))
     story.append(totals_table)
 

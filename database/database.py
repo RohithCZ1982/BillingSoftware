@@ -12,6 +12,8 @@ def _migrate(conn):
     migrations = [
         "ALTER TABLE uniform_items ADD COLUMN gender VARCHAR(10) DEFAULT 'Both'",
         "CREATE INDEX IF NOT EXISTS idx_bills_date ON bills(bill_date)",
+        "ALTER TABLE bills ADD COLUMN payment_mode VARCHAR(10) DEFAULT 'Cash'",
+        "ALTER TABLE bills ADD COLUMN upi_transaction_id VARCHAR(100)",
     ]
     for sql in migrations:
         try:

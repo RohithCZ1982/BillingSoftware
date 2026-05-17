@@ -147,6 +147,24 @@ class BillingFrame(ctk.CTkFrame):
         self.notes_box = ctk.CTkTextbox(form, height=60)
         self.notes_box.pack(fill="x", pady=(2, 0))
 
+        # Payment mode
+        ctk.CTkLabel(form, text="Payment Mode", anchor="w", font=ctk.CTkFont(size=12)).pack(fill="x", pady=(10, 0))
+        self.payment_mode_var = ctk.StringVar(value="Cash")
+        pay_seg = ctk.CTkSegmentedButton(
+            form, values=["Cash", "UPI"],
+            variable=self.payment_mode_var,
+            command=self._on_payment_mode_change,
+        )
+        pay_seg.pack(fill="x", pady=(2, 0))
+
+        self.upi_frame = ctk.CTkFrame(form, fg_color="transparent")
+        self.upi_frame.pack(fill="x")
+        ctk.CTkLabel(self.upi_frame, text="UPI Transaction ID (optional)", anchor="w",
+                     font=ctk.CTkFont(size=12)).pack(fill="x", pady=(6, 0))
+        self.upi_txn_entry = ctk.CTkEntry(self.upi_frame, height=36, placeholder_text="e.g. 123456789012")
+        self.upi_txn_entry.pack(fill="x", pady=(2, 0))
+        self.upi_frame.pack_forget()  # hidden by default (Cash selected)
+
         # Action buttons
         btns = ctk.CTkFrame(right, fg_color="transparent")
         btns.pack(fill="x", padx=14, pady=14)
@@ -205,6 +223,12 @@ class BillingFrame(ctk.CTkFrame):
 
     def _on_gender_change(self, _=None):
         self._load_template_items()
+
+    def _on_payment_mode_change(self, value):
+        if value == "UPI":
+            self.upi_frame.pack(fill="x")
+        else:
+            self.upi_frame.pack_forget()
 
     def _load_template_items(self):
         self._clear_item_rows()
@@ -383,6 +407,9 @@ class BillingFrame(ctk.CTkFrame):
             school = db.query(School).get(school_id) if school_id else None
             school_class = db.query(SchoolClass).get(class_id) if class_id else None
 
+            payment_mode = self.payment_mode_var.get()
+            upi_txn = self.upi_txn_entry.get().strip() if payment_mode == "UPI" else ""
+
             bill = Bill(
                 bill_number=bill_number,
                 school_id=school_id,
@@ -396,6 +423,8 @@ class BillingFrame(ctk.CTkFrame):
                 discount_value=dv,
                 grand_total=grand_total,
                 notes=self.notes_box.get("0.0", "end").strip(),
+                payment_mode=payment_mode,
+                upi_transaction_id=upi_txn or None,
                 created_by=AuthManager.current_user().id,
             )
             # Parse date
@@ -431,6 +460,8 @@ class BillingFrame(ctk.CTkFrame):
                 "discount_value": dv,
                 "grand_total": grand_total,
                 "notes": bill.notes,
+                "payment_mode": payment_mode,
+                "upi_transaction_id": upi_txn,
             }
             pdf_path = generate_bill_pdf(bill_data)
             bill.pdf_path = pdf_path
@@ -470,6 +501,9 @@ class BillingFrame(ctk.CTkFrame):
         self.date_entry.insert(0, datetime.now().strftime("%d-%m-%Y"))
         self.notes_box.delete("0.0", "end")
         self.discount_entry.delete(0, "end")
+        self.payment_mode_var.set("Cash")
+        self.upi_frame.pack_forget()
+        self.upi_txn_entry.delete(0, "end")
         self.bill_status.configure(text="")
         self.print_btn.configure(state="disabled")
         self.open_pdf_btn.configure(state="disabled")
